@@ -38,3 +38,49 @@ $ pip3 install opencv-contrib-python==4.5.3.56
 $ pip3 install matplotlib
 ```
 
+Currently, Edge Impulse for Linux SDK does not support multi-output model so we will be using the compiled TensorFlow Lite runtime for inferencing. This interpreter-only package is a fraction the size of the full TensorFlow package and includes the bare minimum code required to run inferences with TensorFlow Lite. To accelerate the inferencing, the TFLite interpreter can be used with XNNPACK which is a highly optimized library of neural network inference operators for ARM, WebAssembly, and x86 platforms. To enable XNNPACK for 64-bit Raspberry Pi OS, we need to build TFLite Runtime python package from the source. Please execute the following commands on a faster Linux machine with Docker installed to cross-compile and build the package.
+
+```
+$ git clone -b v2.9.0 https://github.com/tensorflow/tensorflow.git
+$ cd tensorflow
+$ curl -L -o tensorflow/tools/ci_build/Dockerfile.pi-python37 \
+  https://github.com/tensorflow/tensorflow/raw/v2.8.0/tensorflow/tools/ci_build/Dockerfile.pi-python37
+  
+$ sed -i -e 's/FROM ubuntu:16.04/FROM ubuntu:18.04/g' tensorflow/tools/ci_build/Dockerfile.pi-python37
+$ sed -i '30a apt-get update && apt-get install -y dirmngr' tensorflow/tools/ci_build/install/install_deb_packages.sh
+$ sed -i -e 's/xenial/bionic/g' tensorflow/tools/ci_build/install/install_pi_python3x_toolchain.sh
+```
+
+To enable XNNPACK for the floating-point (F32) and quantized (INT8) models, add the lines below (shown in the bold) to the tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh file.
+
+```
+aarch64)
+BAZEL_FLAGS="--config=elinux_aarch64
+--define tensorflow_mkldnn_contraction_kernel=0
+--define=tflite_with_xnnpack=true
+--define=tflite_with_xnnpack_qs8=true
+--copt=-O3"
+```
+
+Execute the command below to build the pip package.
+
+```
+$ sudo CI_DOCKER_EXTRA_PARAMS="-e CI_BUILD_PYTHON=python3.7 -e CROSSTOOL_PYTHON_INCLUDE_PATH=/usr/include/python3.7"  tensorflow/tools/ci_build/ci_build.sh PI-PYTHON37  tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh aarch64
+```
+
+Copy the pip package to the reTerminal.
+
+```
+$ scp tensorflow/lite/tools/pip_package/gen/tflite_pip/python3.7/dist/tflite_runtime-2.9.0-cp37-cp37m-linux_aarch64.whl \ 
+  pi@raspberrypi.local:/home/pi
+```
+
+To install the package, execute the command below.
+
+```
+$ pip3 install -U tflite_runtime-2.9.0-cp37-cp37m-linux_aarch64.whl
+
+```
+
+
+
