@@ -1,5 +1,7 @@
 # Surface Crack Detection and Localization using Edge Impulse
 
+![Cover Image](/images/cover.gif)
+
 ## Overview
 
 Cracks are one of the important criteria used for diagnosing the deterioration of concrete structures. Typically, a specialist would inspect such structures by checking for cracks visually, sketching the results of the inspection, and then preparing inspection data based on their findings. An inspection method like this is not only very time-consuming and costly but it also cannot accurately detect cracks. In this project, I built a surface crack detection application using Seeed reTerminal (based on Raspberry Pi Compute Module 4) and Raspberry Pi Camera Module 2.
