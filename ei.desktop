@@ -5,4 +5,4 @@ Terminal=false
 Name=Surface Crack Detection 
 Exec=/home/pi/surface_crack_detection/surface_crack_detection_quant.py 
 Type=Application
-Icon=/home/pi/surface_crack_detection/ei_logo.jpg
+Icon=/home/pi/surface_crack_detection/images/ei_logo.jpg
