@@ -1,14 +1,14 @@
 # Surface Crack Detection and Localization using Edge Impulse
 A computer vision system that detects and localizes the surface cracks in the concrete structures for the predictive maintenance
 
-![Cover Image](/images/cover.gif)
+![Cover Image](images/cover.gif)
 
 
 ## Overview
 
 A 50-year-old bridge collapsed in Pittsburgh (Pennsylvania) on January 28, 2022. There is only one reason why a sturdy structure such as a concrete bridge could suddenly collapse: wear and tear.
 
-![Bridge Collapsed](/images/bridge_collapse.jpeg)
+![Bridge Collapsed](images/bridge_collapse.jpeg)
 
 Concrete structures generally start deteriorating after about 40 to 50 years. For this reason, overlooking signs of wear can result in severe accidents, which is why the inspection and repair of concrete structures are crucial for safeguarding our way of life. Cracks are one of the important criteria used for diagnosing the deterioration of concrete structures. Typically, a specialist would inspect such structures by checking for cracks visually, sketching the results of the inspection, and then preparing inspection data based on their findings. An inspection method like this is not only very time-consuming and costly but it also cannot accurately detect cracks. In this project, I built a surface crack detection application using machine learning. A pre-trained image classification model is fine-tuned using the Transfer Learning with the Edge Impulse Studio and deployed to the Seeed reTerminal (based on Raspberry Pi Compute Module 4) which detects surface cracks in real-time and also localizes them.
 
@@ -24,15 +24,15 @@ The CNN (convolutional neural networks) with GAP (Global Average Pooling) layers
 
 Since I wanted a compact and portable hardware setup, we will be using Seeed reTerminal which comes with an LCD and buttons in a compact form. It is powered by a Raspberry Pi 4 Compute module with 4 GB RAM which would be sufficient for this proof-of-concept project. We would need Raspberry Pi Camera V2 and an acrylic mount for it.
 
-![Hardware](/images/hardware.jpeg)
+![Hardware](images/hardware.jpeg)
 
 We would need to open the back cover of the reTerminal to access the 15-pin FPC camera connector. Please follow the step-by-step instructions here: https://wiki.seeedstudio.com/reTerminal.
 
-![FPC](/images/fpc_label.jpeg)
+![FPC](images/fpc_label.jpeg)
 
 The camera is connected using the FPC ribbon cable and attached to the reTerminal using the mount.
 
-![with Camera](/images/reterminal_with_cam.jpeg)
+![with Camera](images/reterminal_with_cam.jpeg)
 
 ## Setup Development Environment
 The reTerminal comes with 32-bit Raspberry Pi OS but We will be using 64-bit Raspberry Pi OS for better performance. Please follow the instructions here to flash the 64-bit Raspberry Pi OS: https://wiki.seeedstudio.com/reTerminal-FAQ.
