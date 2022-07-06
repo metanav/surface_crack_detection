@@ -34,9 +34,9 @@ The camera is connected using the FPC ribbon cable and attached to the reTermina
 ![with Camera](/images/reterminal_with_cam.jpeg)
 
 ## Setup Development Environment
-The reTerminal comes with 32-bit Raspberry Pi OS but We will be using 64-bit Raspberry Pi OS for better performance. Please follow the instructions here to flash the OS: https://wiki.seeedstudio.com/reTerminal-FAQ.
+The reTerminal comes with 32-bit Raspberry Pi OS but We will be using 64-bit Raspberry Pi OS for better performance. Please follow the instructions here to flash the 64-bit Raspberry Pi OS: https://wiki.seeedstudio.com/reTerminal-FAQ.
 
-To install the python packages, execute the commands below.
+To install the python packages which we will be using in the inferencing code, execute the commands below.
 
 ```
 $ sudo pip3 install seeed-python-reterminal
@@ -45,49 +45,45 @@ $ pip3 install opencv-contrib-python==4.5.3.56
 $ pip3 install matplotlib
 ```
 
-Currently, Edge Impulse for Linux SDK does not support multi-output model so we will be using the compiled TensorFlow Lite runtime for inferencing. This interpreter-only package is a fraction the size of the full TensorFlow package and includes the bare minimum code required to run inferences with TensorFlow Lite. To accelerate the inferencing, the TFLite interpreter can be used with XNNPACK which is a highly optimized library of neural network inference operators for ARM, WebAssembly, and x86 platforms. To enable XNNPACK for 64-bit Raspberry Pi OS, we need to build TFLite Runtime python package from the source. Please execute the following commands on a faster Linux machine with Docker installed to cross-compile and build the package.
+## Data collection
+The datasets were downloaded from the Mendeley Data (Concrete Crack Images for Classification). The dataset contains various concrete surfaces with and without cracks. The data is collected from multiple METU Campus Buildings. The dataset is divided into two negative and positive crack images for image classification. Each class has 20,000 images with a total of 40,000 images with 227 x 227 pixels with RGB channels.
 
-```bash
-$ git clone -b v2.9.0 https://github.com/tensorflow/tensorflow.git
-$ cd tensorflow
-$ curl -L -o tensorflow/tools/ci_build/Dockerfile.pi-python37 \
-  https://github.com/tensorflow/tensorflow/raw/v2.8.0/tensorflow/tools/ci_build/Dockerfile.pi-python37
-  
-$ sed -i -e 's/FROM ubuntu:16.04/FROM ubuntu:18.04/g' tensorflow/tools/ci_build/Dockerfile.pi-python37
-$ sed -i '30a apt-get update && apt-get install -y dirmngr' tensorflow/tools/ci_build/install/install_deb_packages.sh
-$ sed -i -e 's/xenial/bionic/g' tensorflow/tools/ci_build/install/install_pi_python3x_toolchain.sh
-```
+![Datasets](/images/datasets.png)
 
-To enable XNNPACK for the floating-point (F32) and quantized (INT8) models, add the lines below (shown in the bold) to the tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh file.
+To differentiate crack and non-crack surface images from the other natural world scenes, 25,000 randomly sampled images for 80 object categories from the COCO-Minitrain, a subset of the COCO train2017 dataset, were downloaded. The data can be accessed from the links below.
 
-```
-aarch64)
-BAZEL_FLAGS="--config=elinux_aarch64
---define tensorflow_mkldnn_contraction_kernel=0
---define=tflite_with_xnnpack=true
---define=tflite_with_xnnpack_qs8=true
---copt=-O3"
-```
+- Surface Crack Dataset: https://data.mendeley.com/datasets/5y9wdsg2zt/2
+- COCO-Minitrain dataset: https://github.com/giddyyupp/coco-minitrain
 
-Execute the command below to build the pip package.
+## Uploading data to Edge Impulse Studio
+We need to create a new project to upload data to Edge Impulse Studio.
 
-```
-$ sudo CI_DOCKER_EXTRA_PARAMS="-e CI_BUILD_PYTHON=python3.7 -e CROSSTOOL_PYTHON_INCLUDE_PATH=/usr/include/python3.7"  tensorflow/tools/ci_build/ci_build.sh PI-PYTHON37  tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh aarch64
-```
+![New Project](/images/new_project.png)
 
-Copy the pip package to the reTerminal.
+The data is uploaded using the Edge Impulse CLI. Please follow the instructions to install the CLI here: https://docs.edgeimpulse.com/docs/cli-installation.
+
+The downloaded images are labeled into 3 classes and saved into the directories with the label name.
+
+- Positive - surface with crack
+- Negative - surface without crack
+- Unknown - images from the 80 objects
+
+Execute the following commands to upload the images to the Edge Impulse Studio. 
+The datasets are automatically split into training and testing datasets.
 
 ```
-$ scp tensorflow/lite/tools/pip_package/gen/tflite_pip/python3.7/dist/tflite_runtime-2.9.0-cp37-cp37m-linux_aarch64.whl \ 
-  pi@raspberrypi.local:/home/pi
+$ edge-impulse-uploader --category split  --label positive positive/*.jpg
+$ edge-impulse-uploader --category split  --label negative negative/*.jpg
+$ edge-impulse-uploader --category split  --label unknown  unknown/*.jpg
 ```
 
-To install the package, execute the command below.
+We can see the uploaded datasets on the Edge Impulse Studio's Data Acquisition page.
 
-```
-$ pip3 install -U tflite_runtime-2.9.0-cp37-cp37m-linux_aarch64.whl
+![Data Aquisition](/images/data_aquisition.png)
 
-```
+## Training
+Go to the Impulse Design > Create Impulse page, click Add a processing block, and then choose Image, which preprocesses and normalizes image data, and optionally reduces the color depth. Also, on the same page, click Add a learning block, and choose Transfer Learning (Images), which fine-tunes a pre-trained image classification model on the data. We are using a 160x160 image size. Now click on the Save Impulse button.
 
+![Create Impulse](/images/create_impulse.png)
 
 
