@@ -212,4 +212,22 @@ model.fit(train_dataset, validation_data=validation_dataset, epochs=EPOCHS, verb
 
 ```
 
+Now click the Start Training button and wait around 30 minutes until training is completed. We can see the Training output below. The quantized (int8) model has 99.6% accuracy which is pretty good.
+
+![Confusion Matrix](/images/confusion_matrix.png)
+
+## Model Deployment
+Currently, Edge Impulse for Linux SDK does not support a multi-output model so we will be using the compiled TensorFlow Lite runtime for inferencing. This interpreter-only package is a fraction of the size of the complete TensorFlow package and includes the bare minimum code required to run inferences with TensorFlow Lite. To accelerate the inferencing, the TFLite interpreter can be used with XNNPACK which is a highly optimized library of neural network inference operators for ARM, and other platforms. To enable XNNPACK for 64-bit Raspberry Pi OS, we need to build the TFLite Runtime Python package from the source. We will need to execute the following commands on a faster Debian/Ubuntu Linux machine with Docker to cross-compile and build the package.
+
+```
+$ git clone -b v2.9.0 https://github.com/tensorflow/tensorflow.git
+cd tensorflow/
+$ curl -L -o tensorflow/tools/ci_build/Dockerfile.pi-python37   \
+  https://github.com/tensorflow/tensorflow/raw/v2.8.0/tensorflow/tools/ci_build/Dockerfile.pi-python37
+$ sed -i -e 's/FROM ubuntu:16.04/FROM ubuntu:18.04/g' tensorflow/tools/ci_build/Dockerfile.pi-python37
+$ sed -i '30a apt-get update && apt-get install -y dirmngr' tensorflow/tools/ci_build/install/install_deb_packages.sh
+$ sed -i -e 's/xenial/bionic/g' tensorflow/tools/ci_build/install/install_pi_python3x_toolchain.sh
+```
+
+
 
