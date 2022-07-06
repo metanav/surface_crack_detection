@@ -119,7 +119,7 @@ dense_layer = Dense(classes)
 output_pred = Softmax(name="prediction")(dense_layer(last_layer))
 ```
 
-For the class activation map, we need to calculate the dot product of the last convolutional block output and the final dense layers' weight. The Keras Dot layer does not broadcast the multiplier vector with the dynamic batch size so we can not use it. But we can take advantage of the Dense layer which internally does the dot product of the kernel weight with the input. There is a side effect in this approach, the Dense layer adds up bias weight to each dot product. But  this bias weight is very small and does not changes the final normalized values of the class activation map so we can use it without any problems.
+For the class activation map, we need to calculate the dot product of the last convolutional block output and the final dense layers' weight. The Keras Dot layer does not broadcast the multiplier vector with the dynamic batch size so we can not use it. But we can take advantage of the Dense layer which internally does the dot product of the kernel weight with the input. There is a side effect in this approach, the Dense layer adds up bias weight to each dot product. But  this bias weight is very small and does not change the final normalized values of the class activation map so we can use it without any problems.
 
 ```
 conv_layer  = base_model.layers[-4].output
