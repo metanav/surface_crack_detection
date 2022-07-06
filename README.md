@@ -86,4 +86,67 @@ Go to the Impulse Design > Create Impulse page, click Add a processing block, an
 
 ![Create Impulse](/images/create_impulse.png)
 
+Next, go to the Impulse Design > Image page and set the Color depth parameter as RGB, and click the Save parameters button which redirects to another page where we should click on the Generate Feature button. It usually takes a couple of minutes to complete feature generation.
+
+![Feature Generation](/images/generate_features.png)
+
+We can see the 2D visualization of the generated features in Feature Explorer.
+
+![Feature Explorer](/images/feature_explorer.png)
+
+Now go to the Impulse Design > Transfer Learning page and choose the Neural Network architecture. We are using the MobileNetV2 160x160 1.0 transfer learning model with the pre-trained weight provided by the Edge Impulse Studio.
+
+![Model Selection](/images/choose_model.png)
+
+The pre-trained model outputs the class prediction probabilities. To get the class activation map, we need to modify the model and make it a multi-output model. To customize the model, we need to switch to Keras (expert) mode.
+
+![Switch Expert Mode](/images/switch_expert_mode.png)
+
+We can modify the generated code in the text editor as shown below.
+
+![Editor](/images/model_editor.png)
+
+We will connect the 2nd last layer which is a GAP layer to the Dense layer with 3 neurons ( 3 classes in our case). We will be using this Dense layer weights for generating class activation map later.
+
+```
+base_model = tf.keras.applications.MobileNetV2(
+    input_shape = INPUT_SHAPE, alpha=1,
+    weights = WEIGHTS_PATH
+)
+last_layer  = base_model.layers[-2].output
+dense_layer = Dense(classes)
+output_pred = Softmax(name="prediction")(dense_layer(last_layer))
+```
+
+For the class activation map, we need to calculate the dot product of the last convolutional block output and the final dense layers' weight. The Keras Dot layer does not broadcast the multiplier vector with the dynamic batch size so we can not use it. But we can take advantage of the Dense layer which internally does the dot product of the kernel weight with the input. There is a side effect in this approach, the Dense layer adds up bias weight to each dot product but since this bias weight is very small and does not changes the final normalized values of the class activation map,
+
+```
+conv_layer  = base_model.layers[-4].output
+reshape_layer = Reshape((conv_layer.shape[1] * conv_layer.shape[2] , -1))(conv_layer)
+dot_output = dense_layer(reshape_layer)
+```
+
+We need to resample the dot product output to the same size of the input image (160x160) so that we can overlay the heat map. We use UpSampling2D layer for this purpose.
+
+```
+transpose = Permute((2, 1))(dot_output)
+reshape_2_layer = Reshape((-1, conv_layer.shape[1] , conv_layer.shape[2]))(transpose)
+SIZE = (int(INPUT_SHAPE[1] / conv_layer.shape[2]), 
+ int(INPUT_SHAPE[0] / conv_layer.shape[1]))
+output_act_map = UpSampling2D(size=SIZE, interpolation="bilinear", data_format="channels_first", name="activation_map")(reshape_2_layer)
+model = Model(inputs=base_model.inputs, outputs=[output_pred, output_act_map])
+```
+
+Also, we will be training the model from the last two convolutional blocks and freezing all layers before that.
+
+```
+TRAINABLE_START_IDX = -12
+for layer in model.layers[:TRAINABLE_START_IDX]:
+    layer.trainable = False
+```
+
+The modified network architecture after the last convolutional block is given below. This is a multi-output model where the first output provides the prediction class probabilities and the second output provides the class activation map.
+
+![Network](/images/model.png)
+
 
