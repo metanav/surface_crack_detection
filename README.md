@@ -532,7 +532,8 @@ Also, the reTerminal front panel buttons (in the above image) are used for the f
 [![Demo](https://img.youtube.com/vi/vJc4BwoOB2U/0.jpg)](https://www.youtube.com/watch?v=vJc4BwoOB2U)
 
 ## Conclusion
-This project showcases an industrial use case for surface crack detection which can be used for predictive maintenance. The project explains the following features.
+This project showcases an industrial use case for surface crack detection which can be used for predictive maintenance. 
+The project has the following key characteristics.
 
 - Customize the pre-trained transfer learning model in the Edge Impulse Studio expert mode
 - Demonstrate use of a multi-output model trained using Edge Impulse
