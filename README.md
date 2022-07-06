@@ -1,7 +1,8 @@
 # Surface Crack Detection and Localization using Edge Impulse
-### A computer vision system that detects and localizes the surface cracks in the concrete structures for the predictive maintenance
+A computer vision system that detects and localizes the surface cracks in the concrete structures for the predictive maintenance
 
 ![Cover Image](/images/cover.gif)
+
 
 ## Overview
 
