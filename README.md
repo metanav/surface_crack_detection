@@ -149,4 +149,67 @@ The modified network architecture after the last convolutional block is given be
 
 ![Network](/images/model.png)
 
+The full modified training code is as follows.
+
+```
+import math
+from pathlib import Path
+import tensorflow as tf
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Dense, UpSampling2D, Permute, Reshape, Softmax
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import categorical_crossentropy
+
+sys.path.append('./resources/libraries')
+import ei_tensorflow.training
+
+WEIGHTS_PATH = './transfer-learning-weights/keras/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_160.h5'
+
+INPUT_SHAPE = (160, 160, 3)
+
+base_model = tf.keras.applications.MobileNetV2(
+    input_shape = INPUT_SHAPE, alpha=1,
+    weights = WEIGHTS_PATH
+)
+
+last_layer  = base_model.layers[-2].output
+dense_layer = Dense(classes)
+output_pred = Softmax(name="prediction")(dense_layer(last_layer))
+
+
+conv_layer  = base_model.layers[-4].output
+reshape_layer = Reshape((conv_layer.shape[1] * conv_layer.shape[2] , -1))(conv_layer)
+
+dot_output = dense_layer(reshape_layer)
+transpose = Permute((2, 1))(dot_output)
+reshape_2_layer = Reshape((-1, conv_layer.shape[1] , conv_layer.shape[2]))(transpose)
+
+SIZE = (int(INPUT_SHAPE[1] / conv_layer.shape[2]), 
+ int(INPUT_SHAPE[0] / conv_layer.shape[1]))
+
+output_act_map = UpSampling2D(size=SIZE, interpolation="bilinear", data_format="channels_first", name="activation_map")(reshape_2_layer)
+
+model = Model(inputs=base_model.inputs, outputs=[output_pred, output_act_map])
+
+TRAINABLE_START_IDX = -12
+for layer in model.layers[:TRAINABLE_START_IDX]:
+    layer.trainable = False
+
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
+      loss={'prediction': 'categorical_crossentropy', 'activation_map': None},
+      metrics={'prediction': ['accuracy'], 'activation_map': [None]})
+                
+BATCH_SIZE = 32
+EPOCHS=5
+
+train_dataset = train_dataset.batch(BATCH_SIZE, drop_remainder=False)
+
+validation_dataset = validation_dataset.batch(BATCH_SIZE, drop_remainder=False)
+
+callbacks.append(BatchLoggerCallback(BATCH_SIZE, train_sample_count, epochs=EPOCHS))
+
+model.fit(train_dataset, validation_data=validation_dataset, epochs=EPOCHS, verbose=2, callbacks=callbacks)
+
+```
+
 
