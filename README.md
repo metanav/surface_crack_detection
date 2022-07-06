@@ -42,7 +42,7 @@ $ pip3 install matplotlib
 
 Currently, Edge Impulse for Linux SDK does not support multi-output model so we will be using the compiled TensorFlow Lite runtime for inferencing. This interpreter-only package is a fraction the size of the full TensorFlow package and includes the bare minimum code required to run inferences with TensorFlow Lite. To accelerate the inferencing, the TFLite interpreter can be used with XNNPACK which is a highly optimized library of neural network inference operators for ARM, WebAssembly, and x86 platforms. To enable XNNPACK for 64-bit Raspberry Pi OS, we need to build TFLite Runtime python package from the source. Please execute the following commands on a faster Linux machine with Docker installed to cross-compile and build the package.
 
-```
+```bash
 $ git clone -b v2.9.0 https://github.com/tensorflow/tensorflow.git
 $ cd tensorflow
 $ curl -L -o tensorflow/tools/ci_build/Dockerfile.pi-python37 \
