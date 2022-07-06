@@ -528,7 +528,7 @@ Also, the reTerminal front panel buttons (in the above image) are used for the f
 
 ## Inferencing Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/vJc4BwoOB2U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Demo](https://img.youtube.com/vi/vJc4BwoOB2U/0.jpg)](https://www.youtube.com/watch?v=vJc4BwoOB2U)
 
 
 
