@@ -18,11 +18,11 @@ Why do we want to localize the detection using an image classification model? Ca
 
 ## How does it work?
 
-The CNN (convolutional neural networks) with GAP (Global Average Pooling) layers that have been trained for a classification task can also be used for object localization. That is, a GAP-CNN not only tells us what object is contained in the image - it also tells us where the object is in the image, and through no additional work on our part! The localization is expressed as a heat map (class activation map) where the color-coding scheme identifies regions that are relatively important for the GAP-CNN to perform the object identification task.
+The **CNN** (convolutional neural networks) with **GAP** (Global Average Pooling) layers that have been trained for a classification task can also be used for object localization. That is, a GAP-CNN not only tells us what object is contained in the image - it also tells us where the object is in the image, and through no additional work on our part! The localization is expressed as a heat map (class activation map) where the color-coding scheme identifies regions that are relatively important for the **GAP-CNN** to perform the object identification task.
 
 ## Hardware Setup
 
-Since I wanted a compact and portable hardware setup, we will be using Seeed reTerminal which comes with an LCD and buttons in a compact form. It is powered by a Raspberry Pi 4 Compute module with 4 GB RAM which would be sufficient for this proof-of-concept project. We would need Raspberry Pi Camera V2 and an acrylic mount for it.
+Since I wanted a compact and portable hardware setup, we will be using Seeed reTerminal which comes with an LCD and buttons in a compact form. It is powered by a Raspberry Pi 4 Compute Module with 4 GB RAM which would be sufficient for this proof-of-concept project. We would need Raspberry Pi Camera V2 and an acrylic mount for it.
 
 ![Hardware](images/hardware.jpeg)
 
@@ -53,8 +53,8 @@ The datasets were downloaded from the Mendeley Data (Concrete Crack Images for C
 
 To differentiate crack and non-crack surface images from the other natural world scenes, 25,000 randomly sampled images for 80 object categories from the COCO-Minitrain, a subset of the COCO train2017 dataset, were downloaded. The data can be accessed from the links below.
 
-- Surface Crack Dataset: https://data.mendeley.com/datasets/5y9wdsg2zt/2
-- COCO-Minitrain dataset: https://github.com/giddyyupp/coco-minitrain
+- **Surface Crack Dataset:** https://data.mendeley.com/datasets/5y9wdsg2zt/2
+- **COCO-Minitrain dataset**: https://github.com/giddyyupp/coco-minitrain
 
 ## Uploading data to Edge Impulse Studio
 We need to create a new project to upload data to Edge Impulse Studio.
@@ -65,9 +65,9 @@ The data is uploaded using the Edge Impulse CLI. Please follow the instructions 
 
 The downloaded images are labeled into 3 classes and saved into the directories with the label name.
 
-- Positive - surface with crack
-- Negative - surface without crack
-- Unknown - images from the 80 objects
+- **Positive** - surface with crack
+- **Negative** - surface without crack
+- **Unknown** - images from the 80 objects
 
 Execute the following commands to upload the images to the Edge Impulse Studio. 
 The datasets are automatically split into training and testing datasets.
@@ -83,11 +83,11 @@ We can see the uploaded datasets on the Edge Impulse Studio's Data Acquisition p
 ![Data Aquisition](images/data_aquisition.png)
 
 ## Training
-Go to the Impulse Design > Create Impulse page, click Add a processing block, and then choose Image, which preprocesses and normalizes image data, and optionally reduces the color depth. Also, on the same page, click Add a learning block, and choose Transfer Learning (Images), which fine-tunes a pre-trained image classification model on the data. We are using a 160x160 image size. Now click on the Save Impulse button.
+Go to the **Impulse Design** > **Create Impulse** page, click **Add a processing block**, and then choose **Image**, which preprocesses and normalizes image data, and optionally reduces the color depth. Also, on the same page, click **Add a learning block**, and choose **Transfer Learning (Images)**, which fine-tunes a pre-trained image classification model on the data. We are using a 160x160 image size. Now click on the **Save Impulse** button.
 
 ![Create Impulse](images/create_impulse.png)
 
-Next, go to the Impulse Design > Image page and set the Color depth parameter as RGB, and click the Save parameters button which redirects to another page where we should click on the Generate Feature button. It usually takes a couple of minutes to complete feature generation.
+Next, go to the **Impulse Design** > **Image** page and set the *Color depth* parameter as RGB, and click the **Save parameters** button which redirects to another page where we should click on the **Generate Feature** button. It usually takes a couple of minutes to complete feature generation.
 
 ![Feature Generation](images/generate_features.png)
 
@@ -95,11 +95,11 @@ We can see the 2D visualization of the generated features in Feature Explorer.
 
 ![Feature Explorer](images/feature_explorer.png)
 
-Now go to the Impulse Design > Transfer Learning page and choose the Neural Network architecture. We are using the MobileNetV2 160x160 1.0 transfer learning model with the pre-trained weight provided by the Edge Impulse Studio.
+Now go to the **Impulse Design** > **Transfer Learning** page and choose the Neural Network architecture. We are using the **MobileNetV2 160x160 1.0** transfer learning model with the pre-trained weight provided by the Edge Impulse Studio.
 
 ![Model Selection](images/choose_model.png)
 
-The pre-trained model outputs the class prediction probabilities. To get the class activation map, we need to modify the model and make it a multi-output model. To customize the model, we need to switch to Keras (expert) mode.
+The pre-trained model outputs the class prediction probabilities. To get the class activation map, we need to modify the model and make it a multi-output model. To customize the model, we need to switch to **Keras (expert) mode**.
 
 ![Switch Expert Mode](images/switch_expert_mode.png)
 
@@ -107,7 +107,7 @@ We can modify the generated code in the text editor as shown below.
 
 ![Editor](images/model_editor.png)
 
-We will connect the 2nd last layer which is a GAP layer to the Dense layer with 3 neurons ( 3 classes in our case). We will be using this Dense layer weights for generating class activation map later.
+We will connect the 2nd last layer which is a **GAP** layer to the **Dense** layer with 3 neurons ( 3 classes in our case). We will be using this **Dense** layer's weights for generating a class activation map later.
 
 ```
 base_model = tf.keras.applications.MobileNetV2(
@@ -119,7 +119,7 @@ dense_layer = Dense(classes)
 output_pred = Softmax(name="prediction")(dense_layer(last_layer))
 ```
 
-For the class activation map, we need to calculate the dot product of the last convolutional block output and the final dense layers' weight. The Keras Dot layer does not broadcast the multiplier vector with the dynamic batch size so we can not use it. But we can take advantage of the Dense layer which internally does the dot product of the kernel weight with the input. There is a side effect in this approach, the Dense layer adds up bias weight to each dot product. But  this bias weight is very small and does not change the final normalized values of the class activation map so we can use it without any problems.
+For the class activation map, we need to calculate the dot product of the last convolutional block output and the final dense layers' weight. The Keras **Dot** layer does not broadcast the multiplier vector with the dynamic batch size so we can not use it. But we can take advantage of the **Dense** layer which internally does the dot product of the kernel weight with the input. There is a side effect in this approach, the **Dense** layer adds up bias weight to each dot product. But this bias weight is very small and does not change the final normalized values of the class activation map so we can use it without any problems.
 
 ```
 conv_layer  = base_model.layers[-4].output
@@ -127,7 +127,7 @@ reshape_layer = Reshape((conv_layer.shape[1] * conv_layer.shape[2] , -1))(conv_l
 dot_output = dense_layer(reshape_layer)
 ```
 
-We need to resample the dot product output to the same size of the input image (160x160) so that we can overlay the heat map. We use UpSampling2D layer for this purpose.
+We need to resample the dot product output to the same size as the input image (160x160) so that we can overlay the heat map. We use the **UpSampling2D** layer for this purpose.
 
 ```
 transpose = Permute((2, 1))(dot_output)
@@ -213,12 +213,12 @@ model.fit(train_dataset, validation_data=validation_dataset, epochs=EPOCHS, verb
 
 ```
 
-Now click the Start Training button and wait around 30 minutes until training is completed. We can see the Training output below. The quantized (int8) model has 99.6% accuracy which is pretty good.
+Now click the **Start Training** button and wait around 30 minutes until training is completed. We can see the Training output below. The quantized (int8) model has 99.6% accuracy which is pretty good.
 
 ![Confusion Matrix](images/confusion_matrix.png)
 
 ## Model Deployment
-Currently, Edge Impulse for Linux SDK does not support a multi-output model so we will be using the compiled TensorFlow Lite runtime for inferencing. This interpreter-only package is a fraction of the size of the complete TensorFlow package and includes the bare minimum code required to run inferences with TensorFlow Lite. To accelerate the inferencing, the TFLite interpreter can be used with XNNPACK which is a highly optimized library of neural network inference operators for ARM, and other platforms. To enable XNNPACK for 64-bit Raspberry Pi OS, we need to build the TFLite Runtime Python package from the source. We will need to execute the following commands on a faster Debian/Ubuntu Linux machine with Docker to cross-compile and build the package.
+Currently, **Edge Impulse for Linux** SDK does not support a multi-output model so we will be using the compiled TensorFlow Lite runtime for inferencing. This interpreter-only package is a fraction of the size of the complete TensorFlow package and includes the bare minimum code required to run inferences with TensorFlow Lite. To accelerate the inferencing, the TFLite interpreter can be used with **XNNPACK** which is a highly optimized library of neural network inference operators for ARM, and other platforms. To enable **XNNPACK** for 64-bit Raspberry Pi OS, we need to build the TFLite Runtime Python package from the source. We will need to execute the following commands on a faster Debian/Ubuntu Linux machine with Docker to cross-compile and build the package.
 
 ```
 $ git clone -b v2.9.0 https://github.com/tensorflow/tensorflow.git
@@ -230,7 +230,7 @@ $ sed -i '30a apt-get update && apt-get install -y dirmngr' tensorflow/tools/ci_
 $ sed -i -e 's/xenial/bionic/g' tensorflow/tools/ci_build/install/install_pi_python3x_toolchain.sh
 ```
 
-To enable XNNPACK for the floating-point (F32) and quantized (INT8) models, add the lines below (shown in the bold) to the tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh file.
+To enable **XNNPACK** for the floating-point (F32) and quantized (INT8) models, add the lines below (shown in the bold) to the tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh file.
 
 ```
 aarch64)
@@ -501,7 +501,7 @@ if __name__ == '__main__':
 ```
 
 ## Application Workflow Diagram
-The application uses multithreading to use all available 4-cores on the Raspberry Pi 4 compute Module to achieve low latency and better FPS.
+The application implements multithreading to use all available 4-cores on the Raspberry Pi 4 Compute Module to achieve low latency and better FPS.
 
 ![Workflow Diagram](images/workflow.png)
 
@@ -523,17 +523,16 @@ Icon=/home/pi/surface_crack_detection/images/ei_logo.jpg
 
 Also, the reTerminal front panel buttons (in the above image) are used for the following functionalities.
 
-- F1 button: to toggle heat map
-- F2 button: to toggle center crop (zoom in) the preview image
-- O button: to close the app
+- **F1** button: to toggle heat map
+- **F2** button: to toggle center crop (zoom in) the preview image
+- **O** button: to close the app
 
 ## Inferencing Demo
 
 [![Demo](https://img.youtube.com/vi/vJc4BwoOB2U/0.jpg)](https://www.youtube.com/watch?v=vJc4BwoOB2U)
 
 ## Conclusion
-This project showcases an industrial use case for surface crack detection which can be used for predictive maintenance. 
-The project has the following key characteristics.
+This project showcases an industrial use case for surface crack detection which can be used for predictive maintenance. The project has the following key characteristics.
 
 - Customize the pre-trained transfer learning model in the Edge Impulse Studio expert mode
 - Demonstrate use of a multi-output model trained using Edge Impulse
