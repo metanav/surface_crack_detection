@@ -530,5 +530,14 @@ Also, the reTerminal front panel buttons (in the above image) are used for the f
 
 [![Demo](https://img.youtube.com/vi/vJc4BwoOB2U/0.jpg)](https://www.youtube.com/watch?v=vJc4BwoOB2U)
 
+## Conclusion
+This project showcases an industrial use case for surface crack detection which can be used for predictive maintenance. The project explains the following features.
 
+- Customize the pre-trained transfer learning model in the Edge Impulse Studio expert mode
+- Demonstrate use of a multi-output model trained using Edge Impulse
+- Runtime heat-map visualization to localize the detected cracks.
+- Multi-threaded application to increase FPS
+- A scalable and portable solution
+
+Although the project was created using a Raspberry Pi 4 Compute Module, it can be ported easily to higher specs edge devices for improved FPS and real-time detection.
 
